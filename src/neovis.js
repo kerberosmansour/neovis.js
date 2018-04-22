@@ -1,8 +1,10 @@
 'use strict';
 
-import * as neo4j from '../vendor/neo4j-javascript-driver/lib/browser/neo4j-web.js';
+//import * as neo4j from '../vendor/neo4j-javascript-driver/lib/browser/neo4j-web.js';
+//import '../vendor/vis/dist/vis-network.min.css';
+
+import * as  neo4j from  '../vendor/neo4j-javascript-driver/lib/index.js'
 import * as vis from '../vendor/vis/dist/vis-network.min.js';
-import '../vendor/vis/dist/vis-network.min.css';
 import { defaults } from './defaults';
 
 
