@@ -10,13 +10,14 @@ module.exports = function (wallaby) {
         ],
 
         tests: [
-            'test/**/*.coffee'
+            'src-node/test/**/*.coffee'
         ],
         compilers: {
         },
         env: {
 
             type: 'node',
+            runner :'node',
             params: {
                 runner: `-r ${require.resolve('esm')}`
             }

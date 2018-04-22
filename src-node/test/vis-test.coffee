@@ -3,7 +3,8 @@ vis   = require '../../vendor/vis/dist/vis.js'
 
 #{JSDOM} = require 'jsdom'
 
-xdescribe 'visjs test', ->
+describe 'visjs test', ->
+  @.timeout 4000
   it 'should work',->
     edges = new vis.DataSet()
 
@@ -56,8 +57,9 @@ xdescribe 'visjs test', ->
     canvas =  document.getElementsByTagName("canvas")[0]
 
     context = canvas.getContext('2d')
+    console.log canvas
+    console.log context
 
-    console.log canvas.pngStream
 
 
 #    context.beginPath();
