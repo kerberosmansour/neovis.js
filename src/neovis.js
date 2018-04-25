@@ -1,11 +1,11 @@
 'use strict';
 
 //uncomment for wallabyjs
-//import * as  neo4j from  '../vendor/neo4j-javascript-driver/lib/index.js'
+import * as  neo4j from  '../vendor/neo4j-javascript-driver/lib/index.js'
 
 //uncomment for webpack
-import * as neo4j from '../vendor/neo4j-javascript-driver/lib/browser/neo4j-web.js';
-import '../vendor/vis/dist/vis-network.min.css';
+// import * as neo4j from '../vendor/neo4j-javascript-driver/lib/browser/neo4j-web.js';
+// import '../vendor/vis/dist/vis-network.min.css';
 
 //ok on both
 import * as vis from '../vendor/vis/dist/vis-network.min.js';
@@ -34,13 +34,24 @@ export default class NeoVis {
         this._encrypted = config.encrypted      || defaults.neo4j.encrypted
         this._trust     = config.trust          || defaults.neo4j.trust;
         this._query     = config.initial_cypher || defaults.neo4j.initialQuery;
-        this._driver    = neo4j.v1.driver(config.server_url || defaults.neo4j.neo4jUri, neo4j.v1.auth.basic(config.server_user || defaults.neo4j.neo4jUser, config.server_password || defaults.neo4j.neo4jPassword), {encrypted: this._encrypted, trust: this._trust});
+        //this._driver    = neo4j.v1.driver(config.server_url || defaults.neo4j.neo4jUri, neo4j.v1.auth.basic(config.server_user || defaults.neo4j.neo4jUser, config.server_password || defaults.neo4j.neo4jPassword), {encrypted: this._encrypted, trust: this._trust});
         this._nodes     = {};
         this._edges     = {};
         this._data      = {};
         this._network   = null;
-        this._container = document.getElementById(config.container_id);
+    }
 
+    _setup_Driver() {
+        let url      = this._config.server_url                      || defaults.neo4j.neo4jUri;
+        let user     = this._config.server_user                     || defaults.neo4j.neo4jUser;
+        let pwd      = this._config.server_password                 || defaults.neo4j.neo4jPassword;
+        let auth     = neo4j.v1.auth.basic(user, pwd)
+        let options  = { encrypted: this._encrypted , trust: this._trust };
+        this._driver = neo4j.v1.driver(url, auth, options);
+    }
+
+    _setup_Container() {
+        this._container = document.getElementById(this._config.container_id);
     }
 
     _addNode(node) {
@@ -65,8 +76,8 @@ export default class NeoVis {
         let label = n.labels[0];
 
         let captionKey   = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['caption'],
-            sizeKey = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['size'],
-            sizeCypher = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['sizeCypher'],
+            sizeKey      = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['size'],
+            sizeCypher   = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['sizeCypher'],
             communityKey = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['community'];
 
         node['id'] = n.identity.toInt();
@@ -158,9 +169,9 @@ export default class NeoVis {
             captionKey = this._config && this._config.relationships && this._config.relationships[r.type] && this._config.relationships[r.type]['caption'];
 
         let edge = {};
-        edge['id'] = r.identity.toInt();
+        edge['id'  ] = r.identity.toInt();
         edge['from'] = r.start.toInt();
-        edge['to'] = r.end.toInt();
+        edge['to'  ] = r.end.toInt();
 
         // hover tooltip. show all properties in the format <strong>key:</strong> value
         edge['title'] = "";
@@ -288,6 +299,22 @@ export default class NeoVis {
     }
 
 
+    async exec_Neo4j_query(query) {
+        this._setup_Driver()
+        let session = this._driver.session();
+        return await session.run(query, {limit: 30})
+                .then((result)=>{
+                    return result
+                })
+    }
+
+    transform_Neo4j_Records_To_VisJs (records) {
+        let self = this;
+        records.forEach (function(record) {
+            self.handle_onNext(record)
+        })
+    }
+
     render(callback) {
         let self    = this;
         let session = this._driver.session();
@@ -296,7 +323,7 @@ export default class NeoVis {
                     onNext     : function (record) { self.handle_onNext     ( record           ) },
                     onCompleted: function ()       { self.handle_onCompleted( callback         ) },
                     onError    : function (error)  { self.handle_onError    ( error, callback  ) },
-                })
+                });
         return session
         };
 

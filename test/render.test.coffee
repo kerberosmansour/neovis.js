@@ -6,23 +6,23 @@ jsdom_global = require('jsdom-global')
 describe 'NeoVis | render', ->
   neoVis = null
   config =
-    #server_url     : 'bolt://54.197.82.102:34060',
     server_url     : 'bolt://localhost:7687',
     server_user    : 'neo4j',
     server_password: 'servant-jackets-fives',
-    #server_password: 'test'
     initial_cypher : 'match (n)-[r]-(p) return n,r,p limit 3',
-    container_id   : 'viz'
+    container_id   : 'viz-test'
 
   before ->
-    jsdom_global =  jsdom_global("<div id='viz'></div>", { });
-    neoVis       = new NeoVis(config)
+    jsdom_global("<div id='#{config.container_id}'></div>", { });
+    using new NeoVis(config), ->
+      @._setup_Driver()
+      @._setup_Container()
+      neoVis = @
 
   it 'check constructor options', ->
       using neoVis, ->
         @._driver._url         .assert_Is 'localhost:7687'
         @._container.toString().assert_Is '[object HTMLDivElement]'
-
 
   it 'createVisGraph', (done)->
     options = {}
@@ -46,7 +46,6 @@ describe 'NeoVis | render', ->
     done()
 
 
-
   it 'buildNodeVisObject', ->
     console.log 'to do'
 
@@ -57,7 +56,6 @@ describe 'NeoVis | render', ->
       neoVis._nodes._keys().assert_Size_Is  2
       neoVis._edges._keys().assert_Size_Is 6
       done()
-
 
   it 'render (test path)', (done)->
     neoVis._query = 'MATCH p=()-[r:DIRECTED]->() RETURN p LIMIT 4'

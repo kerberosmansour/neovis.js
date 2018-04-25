@@ -2,12 +2,12 @@ require 'fluentnode'
 NeoVis       = (require '../src/neovis.js').default
 jsdom_global = require('jsdom-global')
 
-jsdom_global =  jsdom_global("", { });
 
 describe 'NeoVis', ->
   neoVis = null
 
   beforeEach ->
+    jsdom_global("", { });
     neoVis        = new NeoVis()
 
   it 'constructor', ->
@@ -19,8 +19,19 @@ describe 'NeoVis', ->
       @._encrypted .assert_Is 'ENCRYPTION_OFF'
       @._trust     .assert_Is 'TRUST_ALL_CERTIFICATES'
       @._query     .assert_Contains 'MATCH (n) WHERE exists(n.pagerank)'
-      @._driver    .constructor.name.assert_Is 'Driver'
       assert_Is_Null @._network
+
+  it '_setup_Driver', ->
+    using neoVis, ->
+      @._setup_Driver()
+      @._driver    .constructor.name.assert_Is 'Driver'
+
+      @._driver._url.assert_Is 'localhost:7687'
+
+  it '_setup_Container', ->
+    console.log '123'
+    using neoVis, ->
+      @._setup_Container()
       assert_Is_Null @._container
 
   it '_addNode', ->
