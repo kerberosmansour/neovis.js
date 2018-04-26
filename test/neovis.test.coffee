@@ -29,7 +29,6 @@ describe 'NeoVis', ->
       @._driver._url.assert_Is 'localhost:7687'
 
   it '_setup_Container', ->
-    console.log '123'
     using neoVis, ->
       @._setup_Container()
       assert_Is_Null @._container

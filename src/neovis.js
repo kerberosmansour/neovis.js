@@ -308,10 +308,11 @@ export default class NeoVis {
         let self = this;
         self._setup_Driver()
         let session = self._driver.session();
-        await session.run(query, {limit: 30})
+        return await session.run(query, {limit: 30})
                 .then((result)=>{
                     session.close();
                     self._records = result.records
+                    return result
                 })
     }
 
@@ -339,11 +340,9 @@ export default class NeoVis {
     }
 
     render(callback) {
+        this.setup()
 
         let self    = this;
-
-re
-
         let session = this._driver.session();
         session.run(this._query, {limit: 30})
                .subscribe({

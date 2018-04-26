@@ -46,10 +46,6 @@ describe 'NeoVis | render', ->
     done()
 
 
-  it 'buildNodeVisObject', ->
-    console.log 'to do'
-
-
   it 'render (schema)', (done)->
     neoVis._query = 'CALL db.schema()'
     neoVis.render ()->
@@ -108,4 +104,5 @@ describe 'NeoVis | render', ->
           hierarchical    : { enabled: false, sortMethod: "hubsize" }
       @.physics.assert_Is
           adaptiveTimestep: true
-          stabilization: { iterations: 200, fit: true }
+          barnesHut       : gravitationalConstant: -8000, springConstant: 0.04, springLength: 95
+          stabilization   : iterations: 200, fit: true

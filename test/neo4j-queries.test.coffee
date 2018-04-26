@@ -51,9 +51,9 @@ describe 'NeoVis | render', ->
         neoVis._edges['7'].assert_Is { id: 7, from: 8, to: 0, title: '<strong>roles:</strong> Emil<br>', value: 1, label: 'ACTED_IN' }
 
   it 'transform_Neo4j_Records_To_VisJs (mock data)', ->
-    records = [ [ neo4j_Data.rawData_on_Next_Record_Using_Types()._fields ]]
+    neoVis._records = [ [ neo4j_Data.rawData_on_Next_Record_Using_Types()._fields ]]
 
-    neoVis.transform_Neo4j_Records_To_VisJs(records)               # transform records in visJs nodes
+    neoVis.transform_Neo4j_Records_To_VisJs()               # transform records in visJs nodes
 
     neoVis._nodes._keys().assert_Is [ '0', '8' ]
 
