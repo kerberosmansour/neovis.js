@@ -43700,8 +43700,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //import * as  neo4j from  '../vendor/neo4j-javascript-driver/lib/index.js'
 
 //uncomment for webpack
-
-
+ 
+ 
 
 //ok on both
 
@@ -43730,13 +43730,25 @@ class NeoVis {
         this._encrypted = config.encrypted      || __WEBPACK_IMPORTED_MODULE_3__defaults__["a" /* defaults */].neo4j.encrypted
         this._trust     = config.trust          || __WEBPACK_IMPORTED_MODULE_3__defaults__["a" /* defaults */].neo4j.trust;
         this._query     = config.initial_cypher || __WEBPACK_IMPORTED_MODULE_3__defaults__["a" /* defaults */].neo4j.initialQuery;
-        this._driver    = __WEBPACK_IMPORTED_MODULE_0__vendor_neo4j_javascript_driver_lib_browser_neo4j_web_js__["v1"].driver(config.server_url || __WEBPACK_IMPORTED_MODULE_3__defaults__["a" /* defaults */].neo4j.neo4jUri, __WEBPACK_IMPORTED_MODULE_0__vendor_neo4j_javascript_driver_lib_browser_neo4j_web_js__["v1"].auth.basic(config.server_user || __WEBPACK_IMPORTED_MODULE_3__defaults__["a" /* defaults */].neo4j.neo4jUser, config.server_password || __WEBPACK_IMPORTED_MODULE_3__defaults__["a" /* defaults */].neo4j.neo4jPassword), {encrypted: this._encrypted, trust: this._trust});
+        //this._driver    = neo4j.v1.driver(config.server_url || defaults.neo4j.neo4jUri, neo4j.v1.auth.basic(config.server_user || defaults.neo4j.neo4jUser, config.server_password || defaults.neo4j.neo4jPassword), {encrypted: this._encrypted, trust: this._trust});
         this._nodes     = {};
         this._edges     = {};
         this._data      = {};
         this._network   = null;
-        this._container = document.getElementById(config.container_id);
+        this._vis       = __WEBPACK_IMPORTED_MODULE_2__vendor_vis_dist_vis_network_min_js__
+    }
 
+    _setup_Driver() {
+        let url      = this._config.server_url                      || __WEBPACK_IMPORTED_MODULE_3__defaults__["a" /* defaults */].neo4j.neo4jUri;
+        let user     = this._config.server_user                     || __WEBPACK_IMPORTED_MODULE_3__defaults__["a" /* defaults */].neo4j.neo4jUser;
+        let pwd      = this._config.server_password                 || __WEBPACK_IMPORTED_MODULE_3__defaults__["a" /* defaults */].neo4j.neo4jPassword;
+        let auth     = __WEBPACK_IMPORTED_MODULE_0__vendor_neo4j_javascript_driver_lib_browser_neo4j_web_js__["v1"].auth.basic(user, pwd)
+        let options  = { encrypted: this._encrypted , trust: this._trust };
+        this._driver = __WEBPACK_IMPORTED_MODULE_0__vendor_neo4j_javascript_driver_lib_browser_neo4j_web_js__["v1"].driver(url, auth, options);
+    }
+
+    _setup_Container() {
+        this._container = document.getElementById(this._config.container_id);
     }
 
     _addNode(node) {
@@ -43761,8 +43773,8 @@ class NeoVis {
         let label = n.labels[0];
 
         let captionKey   = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['caption'],
-            sizeKey = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['size'],
-            sizeCypher = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['sizeCypher'],
+            sizeKey      = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['size'],
+            sizeCypher   = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['sizeCypher'],
             communityKey = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['community'];
 
         node['id'] = n.identity.toInt();
@@ -43854,9 +43866,9 @@ class NeoVis {
             captionKey = this._config && this._config.relationships && this._config.relationships[r.type] && this._config.relationships[r.type]['caption'];
 
         let edge = {};
-        edge['id'] = r.identity.toInt();
+        edge['id'  ] = r.identity.toInt();
         edge['from'] = r.start.toInt();
-        edge['to'] = r.end.toInt();
+        edge['to'  ] = r.end.toInt();
 
         // hover tooltip. show all properties in the format <strong>key:</strong> value
         edge['title'] = "";
@@ -43890,8 +43902,6 @@ class NeoVis {
 
         return edge;
     }
-
-    // public API
 
     handle_Node(value) {
         let self = this;
@@ -43983,16 +43993,61 @@ class NeoVis {
             console.log(error);
     }
 
+    // public API
+    setup () {
+        this._setup_Driver()
+        this._setup_Container()
+        return this;
+    }
+
+    async exec_Neo4j_query(query) {
+        let self = this;
+        self._setup_Driver()
+        let session = self._driver.session();
+        await session.run(query, {limit: 30})
+                .then((result)=>{
+                    session.close();
+                    self._records = result.records
+                })
+    }
+
+    transform_Neo4j_Records_To_VisJs () {
+        let self = this;
+
+        self._records.forEach (function(record) {
+            self.handle_onNext(record)
+        })
+        return self
+    }
+
+    create_Network_Graph(){
+        let self = this;
+        self.createVisGraph(self._nodes, self._edges)
+        setTimeout(() => { self._network.stopSimulation(); }, 10000);
+    }
+
+    async render_async() {
+        let self     = this;
+
+        await self.exec_Neo4j_query(self._query)
+        self.transform_Neo4j_Records_To_VisJs()
+            .create_Network_Graph()
+    }
 
     render(callback) {
+
         let self    = this;
+
+        self._setup_Driver()
+        self._setup_Container()
+
         let session = this._driver.session();
         session.run(this._query, {limit: 30})
                .subscribe({
                     onNext     : function (record) { self.handle_onNext     ( record           ) },
                     onCompleted: function ()       { self.handle_onCompleted( callback         ) },
                     onError    : function (error)  { self.handle_onError    ( error, callback  ) },
-                })
+                });
         return session
         };
 
@@ -44044,11 +44099,11 @@ class NeoVis {
                 // }
 
                 adaptiveTimestep: true,
-                // barnesHut: {
-                //     gravitationalConstant: -8000,
-                //     springConstant: 0.04,
-                //     springLength: 95
-                // },
+                barnesHut: {
+                    gravitationalConstant: -8000,
+                    springConstant: 0.04,
+                    springLength: 95
+                },
                 stabilization: {
                     iterations: 200,
                     fit: true

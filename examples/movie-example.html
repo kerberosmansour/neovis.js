@@ -24,7 +24,7 @@
 
         var viz;
 
-        function draw() {
+        async function draw() {
             var config = {
                 container_id: "viz",
                 server_url: "bolt://localhost:7687",
@@ -43,7 +43,27 @@
             };
 
             viz = new NeoVis.default(config);
-            viz.render();
+
+//            viz.render();
+
+            viz.setup()
+//            viz.render_async();
+
+            await viz.exec_Neo4j_query(viz._query)
+            viz.transform_Neo4j_Records_To_VisJs()
+
+            node = viz._nodes[0]
+            delete node.group
+            node.label ='Changed via js 123'
+            node.shape ='box'
+            node.color = 'red'
+
+            viz.create_Network_Graph()
+            options = {
+                physics  : {
+                    barnesHut: {
+                        gravitationalConstant: -900 } } }
+            viz._network.setOptions(options)
         }
     </script>
 </head>

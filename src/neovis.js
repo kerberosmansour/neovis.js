@@ -1,11 +1,11 @@
 'use strict';
 
 //uncomment for wallabyjs
-import * as  neo4j from  '../vendor/neo4j-javascript-driver/lib/index.js'
+//import * as  neo4j from  '../vendor/neo4j-javascript-driver/lib/index.js'
 
 //uncomment for webpack
-// import * as neo4j from '../vendor/neo4j-javascript-driver/lib/browser/neo4j-web.js';
-// import '../vendor/vis/dist/vis-network.min.css';
+ import * as neo4j from '../vendor/neo4j-javascript-driver/lib/browser/neo4j-web.js';
+ import '../vendor/vis/dist/vis-network.min.css';
 
 //ok on both
 import * as vis from '../vendor/vis/dist/vis-network.min.js';
@@ -39,6 +39,7 @@ export default class NeoVis {
         this._edges     = {};
         this._data      = {};
         this._network   = null;
+        this._vis       = vis
     }
 
     _setup_Driver() {
@@ -206,8 +207,6 @@ export default class NeoVis {
         return edge;
     }
 
-    // public API
-
     handle_Node(value) {
         let self = this;
         let node = self.buildNodeVisObject(value);
@@ -298,25 +297,53 @@ export default class NeoVis {
             console.log(error);
     }
 
+    // public API
+    setup () {
+        this._setup_Driver()
+        this._setup_Container()
+        return this;
+    }
 
     async exec_Neo4j_query(query) {
-        this._setup_Driver()
-        let session = this._driver.session();
-        return await session.run(query, {limit: 30})
+        let self = this;
+        self._setup_Driver()
+        let session = self._driver.session();
+        await session.run(query, {limit: 30})
                 .then((result)=>{
-                    return result
+                    session.close();
+                    self._records = result.records
                 })
     }
 
-    transform_Neo4j_Records_To_VisJs (records) {
+    transform_Neo4j_Records_To_VisJs () {
         let self = this;
-        records.forEach (function(record) {
+
+        self._records.forEach (function(record) {
             self.handle_onNext(record)
         })
+        return self
+    }
+
+    create_Network_Graph(){
+        let self = this;
+        self.createVisGraph(self._nodes, self._edges)
+        setTimeout(() => { self._network.stopSimulation(); }, 10000);
+    }
+
+    async render_async() {
+        let self     = this;
+
+        await self.exec_Neo4j_query(self._query)
+        self.transform_Neo4j_Records_To_VisJs()
+            .create_Network_Graph()
     }
 
     render(callback) {
+
         let self    = this;
+
+re
+
         let session = this._driver.session();
         session.run(this._query, {limit: 30})
                .subscribe({
@@ -375,11 +402,11 @@ export default class NeoVis {
                 // }
 
                 adaptiveTimestep: true,
-                // barnesHut: {
-                //     gravitationalConstant: -8000,
-                //     springConstant: 0.04,
-                //     springLength: 95
-                // },
+                barnesHut: {
+                    gravitationalConstant: -8000,
+                    springConstant: 0.04,
+                    springLength: 95
+                },
                 stabilization: {
                     iterations: 200,
                     fit: true
