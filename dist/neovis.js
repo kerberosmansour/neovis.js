@@ -43736,6 +43736,7 @@ class NeoVis {
         this._data      = {};
         this._network   = null;
         this._vis       = __WEBPACK_IMPORTED_MODULE_2__vendor_vis_dist_vis_network_min_js__
+        this._options   = this.getOptions();
     }
 
     _setup_Driver() {
@@ -44055,9 +44056,7 @@ class NeoVis {
             "nodes": new __WEBPACK_IMPORTED_MODULE_2__vendor_vis_dist_vis_network_min_js__["DataSet"](Object.values(nodes)),
             "edges": new __WEBPACK_IMPORTED_MODULE_2__vendor_vis_dist_vis_network_min_js__["DataSet"](Object.values(edges))
         }
-        var container = self._container;
-        let options   = self.getOptions();
-        self._network = new __WEBPACK_IMPORTED_MODULE_2__vendor_vis_dist_vis_network_min_js__["Network"](container, self._data, options);
+        self._network = new __WEBPACK_IMPORTED_MODULE_2__vendor_vis_dist_vis_network_min_js__["Network"](self._container, self._data, self._options);
     }
 
     getOptions() {

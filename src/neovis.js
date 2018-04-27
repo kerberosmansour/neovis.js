@@ -40,6 +40,7 @@ export default class NeoVis {
         this._data      = {};
         this._network   = null;
         this._vis       = vis
+        this._options   = this.getOptions();
     }
 
     _setup_Driver() {
@@ -359,9 +360,7 @@ export default class NeoVis {
             "nodes": new vis.DataSet(Object.values(nodes)),
             "edges": new vis.DataSet(Object.values(edges))
         }
-        var container = self._container;
-        let options   = self.getOptions();
-        self._network = new vis.Network(container, self._data, options);
+        self._network = new vis.Network(self._container, self._data, self._options);
     }
 
     getOptions() {

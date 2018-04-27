@@ -8,10 +8,9 @@
         }
 
         #viz {
-            width: 900px;
-            height: 700px;
+            width: 500px;
+            height: 500px;
             border: 1px solid lightgray;
-            font: 22pt arial;
         }
 
     </style>
@@ -36,7 +35,7 @@
                 },
                 relationships: {
                 },
-                initial_cypher: "match (n)-[r]-(p) return n,r,p limit 20",
+                initial_cypher: "match (n)-[r]-(p) return n,r,p limit 10",
                 //initial_cypher: "MATCH p=()-[r:DIRECTED]->() RETURN p LIMIT 4",
                 //initial_cypher: "CALL db.schema()",
                 arrows: false
@@ -52,25 +51,46 @@
             await viz.exec_Neo4j_query(viz._query)
             viz.transform_Neo4j_Records_To_VisJs()
 
-            node = viz._nodes[0]
+            node       = viz._nodes[0]
             delete node.group
             node.label ='Changed via js 123'
             node.shape ='box'
             node.color = 'red'
 
             viz.create_Network_Graph()
+
             options = {
                 physics  : {
                     barnesHut: {
-                        gravitationalConstant: -9000 } } }
-                        
+                        gravitationalConstant: -9000,
+                        } } }
+
             viz._network.setOptions(options)
+
+            // adding a couple nodes
+            //setTimeout(add_Extra_Nodes, 500)
+            add_Extra_Nodes()
+
+
+        }
+        function add_Extra_Nodes() {
+            nodes = viz._network.body.data.nodes;
+            edges = viz._network.body.data.edges
+            node_1 = nodes.add({ label : 'a new node 1'                  } )[0]
+            node_2 = nodes.add({ label : 'a new node 2' , shape:'box'    } )[0]
+            node_3 = nodes.add({ label : 'a new node 3' , shape:'star'  , color:'green' } )[0]
+            node_4 = nodes.add({ label : 'a new node 4' , shape:'circle', color:'black'} )[0]
+            edges.add({ from : 1      , to: node_1} )
+            edges.add({ from : node_1 , to: node_2} )
+            edges.add({ from : node_1 , to: node_3} )
+            edges.add({ from : node_1 , to: node_4} )
+
         }
     </script>
 </head>
 <body onload="draw()">
 
-<h2>From 'Network and IT Management' Neo4j sandbox</h2>
+<h2>From 'Movies' Neo4j local server</h2>
 
 <div id="viz"></div>
 
