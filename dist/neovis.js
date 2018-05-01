@@ -43776,10 +43776,12 @@ class NeoVis {
         let captionKey   = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['caption'],
             sizeKey      = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['size'],
             sizeCypher   = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['sizeCypher'],
-            communityKey = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['community'];
+            communityKey = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['community'],
+            shape        = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['shape'],
+            size         = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['size'];
 
         node['id'] = n.identity.toInt();
-        
+
         // node size
 
         if (sizeCypher) {
@@ -43789,9 +43791,9 @@ class NeoVis {
 
             let session = this._driver.session();
             session.run(sizeCypher, {id: __WEBPACK_IMPORTED_MODULE_0__vendor_neo4j_javascript_driver_lib_browser_neo4j_web_js__["v1"].int(node['id'])})
-                .then(function(result) {
-                    result.records.forEach(function(record) {
-                        record.forEach(function(v,k,r) {
+                .then(function (result) {
+                    result.records.forEach(function (record) {
+                        record.forEach(function (v, k, r) {
                             if (typeof v === "number") {
                                 self._addNode({id: node['id'], value: v});
                             } else if (v.constructor.name === "Integer") {
@@ -43826,6 +43828,10 @@ class NeoVis {
 
         // node caption
         node['label'] = n.properties[captionKey] || label || "";
+
+        //shape
+        if (shape) { node['shape'] = shape         }
+        if (size ) { node['font' ] = {size: size } }
 
         // community
         // behavior: color by value of community property (if set in config), then color by label
@@ -44061,6 +44067,7 @@ class NeoVis {
 
     getOptions() {
         let self = this;
+        return {}
         let options = {
             nodes: {
                 shape: 'dot',
