@@ -43770,15 +43770,18 @@ class NeoVis {
      buildNodeVisObject(n) {
 
         var self = this;
-        let node = {};
-        let label = n.labels[0];
+        let node = {};let label = n.labels[0];
 
-        let captionKey   = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['caption'],
-            sizeKey      = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['size'],
+        let captionKey   = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['caption'   ],
+            sizeKey      = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['size'      ],
             sizeCypher   = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['sizeCypher'],
-            communityKey = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['community'],
-            shape        = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['shape'],
-            size         = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['size'];
+            color        = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['color'     ],
+            communityKey = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['community' ],
+            mass         = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['mass'      ],
+            shape        = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['shape'     ],
+            size         = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['size'      ],
+            labelValue   = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['label'     ];
+
 
         node['id'] = n.identity.toInt();
 
@@ -43830,8 +43833,8 @@ class NeoVis {
         node['label'] = n.properties[captionKey] || label || "";
 
         //shape
-        if (shape) { node['shape'] = shape         }
-        if (size ) { node['font' ] = {size: size } }
+        // if (shape) { node['shape'] = shape         }
+        // if (size ) { node['font' ] = {size: size } }
 
         // community
         // behavior: color by value of community property (if set in config), then color by label
@@ -43859,6 +43862,14 @@ class NeoVis {
             if (n.hasOwnProperty(key))                                                                  // DC Change (check if it has side effects)
                 node['title'] += "<strong>" + key + ":</strong>" + " " + n.properties[key] + "<br>";
         }
+
+        if (color     ) { node['color'] = color; delete node['group']; }
+        if (labelValue) { node['label'] = labelValue    }
+        if (mass      ) { node['mass' ] = mass          }
+        if (shape     ) { node['shape'] = shape         }
+        if (size      ) { node['font' ] = {size: size } }
+
+
         return node;
     }
 
@@ -43869,8 +43880,13 @@ class NeoVis {
      */
     buildEdgeVisObject(r) {
 
-        let weightKey = this._config && this._config.relationships && this._config.relationships[r.type] && this._config.relationships[r.type]['thickness'],
-            captionKey = this._config && this._config.relationships && this._config.relationships[r.type] && this._config.relationships[r.type]['caption'];
+        let weightKey  = this._config && this._config.relationships && this._config.relationships[r.type] && this._config.relationships[r.type]['size'   ],
+            captionKey = this._config && this._config.relationships && this._config.relationships[r.type] && this._config.relationships[r.type]['caption'],
+            label      = this._config && this._config.relationships && this._config.relationships[r.type] && this._config.relationships[r.type]['label'  ],
+            color      = this._config && this._config.relationships && this._config.relationships[r.type] && this._config.relationships[r.type]['color'  ],
+            arrow      = this._config && this._config.relationships && this._config.relationships[r.type] && this._config.relationships[r.type]['arrow'  ],
+            dashes     = this._config && this._config.relationships && this._config.relationships[r.type] && this._config.relationships[r.type]['dashes' ];
+
 
         let edge = {};
         edge['id'  ] = r.identity.toInt();
@@ -43883,18 +43899,17 @@ class NeoVis {
             edge['title'] += "<strong>" + key + ":</strong>" + " " + r.properties[key] + "<br>";
         }
 
-        // set relationship thickness
+        // set relationship thickness (using width value )
         if (weightKey && typeof weightKey === "string") {
-            edge['value'] = r.properties[weightKey];
+            edge['width'] = r.properties[weightKey];
         } else if (weightKey && typeof weightKey === "number") {
-            edge['value'] = weightKey;
-        } else {
-            edge['value'] = 1.0;
+            edge['width'] = weightKey;
+        }
+        else {
+            edge['width'] = 1.0;
         }
 
         // set caption
-
-
         if (typeof captionKey === "boolean") {
             if (!captionKey) {
                 edge['label'] = "";
@@ -43906,6 +43921,14 @@ class NeoVis {
         } else {
             edge['label'] = r.type;
         }
+
+        if (arrow ) { edge['arrows'] = { to  : { enabled: true } } }
+        if (color ) { edge['color' ] = { color: color            } }
+        if (dashes) { edge['dashes'] = true                        }
+        if (label)  { edge['label' ] = label                       }
+
+
+
 
         return edge;
     }
