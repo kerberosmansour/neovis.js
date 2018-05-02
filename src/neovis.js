@@ -81,6 +81,8 @@ export default class NeoVis {
             sizeKey      = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['size'      ],
             sizeCypher   = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['sizeCypher'],
             color        = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['color'     ],
+            icon         = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['icon'      ],
+            image        = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['image'     ],
             communityKey = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['community' ],
             mass         = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['mass'      ],
             shape        = this._config && this._config.labels && this._config.labels[label] && this._config.labels[label]['shape'     ],
@@ -173,7 +175,15 @@ export default class NeoVis {
         if (mass      ) { node['mass' ] = mass          }
         if (shape     ) { node['shape'] = shape         }
         if (size      ) { node['font' ] = {size: size } }
+        if (icon      ) {
+            node['shape'] = 'icon'
+            node['icon' ] = { face: 'FontAwesome',  code: icon , color   : color }
+            }
+        if (image     ) {
+            node['shape' ] = 'image'
 
+            node['image' ] = image
+        }
 
         return node;
     }
@@ -315,7 +325,7 @@ export default class NeoVis {
 
         session.close();
         self.createVisGraph(self._nodes, self._edges)
-        setTimeout(() => { self._network.stopSimulation(); }, 10000);
+        //setTimeout(() => { self._network.stopSimulation(); }, 10000);
 
         if(callback)
             callback()
